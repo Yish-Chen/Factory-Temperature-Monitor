@@ -23,7 +23,7 @@ View your app in AI Studio: https://ai.studio/apps/5b98cac5-bec7-4f7e-88d7-571af
 
 This repository now includes a GitHub Actions workflow that builds and deploys the app to GitHub Pages whenever code is pushed to the `main` branch.
 
-Before the first deployment, open **Settings → Pages** in GitHub and make sure the site is configured to use **GitHub Actions** as the build and deployment source.
+The deployment workflow will automatically enable GitHub Pages for the repository on the first successful run.
 
 After that, every push to `main` will publish the site at:
 
