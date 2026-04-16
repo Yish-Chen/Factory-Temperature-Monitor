@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/Factory-Temperature-Monitor/dev-sw.js?dev-sw', { scope: '/Factory-Temperature-Monitor/', type: 'classic' })

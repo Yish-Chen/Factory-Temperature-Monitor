@@ -11,6 +11,12 @@ interface OvenDetailProps {
 type ChartType = 'line' | 'area' | 'bar';
 type ViewMode = 'year' | 'month' | 'day' | 'hour';
 
+const getSensorLevel = (temperature: number, warningThreshold: number, criticalThreshold: number) => {
+  if (temperature >= criticalThreshold) return 'critical';
+  if (temperature >= warningThreshold) return 'warning';
+  return 'normal';
+};
+
 export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
   const { ovens, rules, unit, updateSensorThreshold } = useAppContext();
   const oven = ovens.find(o => o.id === ovenId);
@@ -331,7 +337,7 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
   };
 
   return (
-    <div className="p-4 md:p-8 flex flex-col h-full bg-[var(--bg)] text-[var(--ink)] overflow-hidden">
+    <div className="page-enter p-4 md:p-8 flex flex-col h-full bg-[var(--bg)] text-[var(--ink)] overflow-hidden">
       <header className="mb-4 md:mb-8 shrink-0 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex items-center space-x-4">
           <button onClick={onBack} className="p-2 hover:bg-[var(--line)] rounded-full transition-colors mt-1">
@@ -429,33 +435,45 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
       <div className="flex flex-col lg:flex-row gap-4 md:gap-8 flex-1 min-h-0">
         {/* Sensors List & Settings */}
         <div className="flex flex-col gap-4 w-full lg:w-1/4 shrink-0 overflow-y-auto">
-          <div className="data-grid flex flex-col shrink-0 min-h-0 bg-[var(--panel-bg)] flex-1">
+          <div className="panel-card flex flex-col shrink-0 min-h-0 bg-[var(--panel-bg)] flex-1">
             <div className="p-4 border-b border-[var(--line)] font-bold shrink-0">
               <h3 className="font-bold">溫度計列表</h3>
             </div>
             <div className="overflow-y-auto flex-1 h-32 lg:h-auto">
-              {oven.sensors.map(sensor => (
-                <div 
-                  key={sensor.id}
-                  onClick={() => setSelectedSensorId(sensor.id)}
-                  className={`data-row interactive ${activeSensor?.id === sensor.id ? 'active' : ''}`}
-                >
-                  <div>
-                    <div className="font-bold">{sensor.name}</div>
-                    <div className="col-header mt-1 text-[var(--muted)]">ID: {sensor.id}</div>
+              {oven.sensors.map(sensor => {
+                const warningThreshold = sensor.thresholds?.warning ?? rules.find(r => r.level === 'warning')?.threshold ?? 100;
+                const criticalThreshold = sensor.thresholds?.critical ?? rules.find(r => r.level === 'critical')?.threshold ?? 110;
+                const sensorLevel = getSensorLevel(sensor.temperature, warningThreshold, criticalThreshold);
+                const levelClass = sensorLevel === 'critical'
+                  ? 'bg-rose-500'
+                  : sensorLevel === 'warning'
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500';
+
+                return (
+                  <div 
+                    key={sensor.id}
+                    onClick={() => setSelectedSensorId(sensor.id)}
+                    className={`data-row interactive relative ${activeSensor?.id === sensor.id ? 'active' : ''}`}
+                  >
+                    <span className={`absolute left-0 top-0 h-full w-1.5 ${levelClass}`} />
+                    <div className="pl-2">
+                      <div className="font-bold">{sensor.name}</div>
+                      <div className="col-header mt-1 text-[var(--muted)]">ID: {sensor.id}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="data-value text-lg">{convertTemp(sensor.temperature, unit).toFixed(1)}°{unit}</div>
+                      <div className="text-[10px] uppercase font-bold mt-1 text-[var(--muted)]">Cap: {sensor.capacity}</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="data-value text-lg">{convertTemp(sensor.temperature, unit).toFixed(1)}°{unit}</div>
-                    <div className="text-[10px] uppercase font-bold mt-1 text-[var(--muted)]">Cap: {sensor.capacity}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Sensor Override Settings */}
           {activeSensor && (
-             <div className="data-grid bg-[var(--panel-bg)] p-4 flex flex-col gap-2">
+             <div className="panel-card bg-[var(--panel-bg)] p-4 flex flex-col gap-2">
                 <div className="flex justify-between items-center mb-2 pb-2 border-b border-[var(--line)]">
                   <h4 className="font-bold text-sm flex items-center">
                     <SettingsIcon size={14} className="mr-1" /> 此溫度計警報配置
@@ -503,7 +521,7 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
         </div>
 
         {/* Chart Area */}
-        <div className={`data-grid p-4 md:p-6 flex flex-col bg-[var(--panel-bg)] min-h-0 ${isFullscreen ? 'fixed inset-4 z-50 shadow-2xl overflow-hidden' : 'flex-1 w-full lg:w-3/4'}`}>
+        <div className={`panel-card p-4 md:p-6 flex flex-col bg-[var(--panel-bg)] min-h-0 ${isFullscreen ? 'fixed inset-4 z-50 shadow-2xl overflow-hidden' : 'flex-1 w-full lg:w-3/4'}`}>
           <div className="mb-4 md:mb-6 shrink-0 flex justify-between items-start">
             <div>
               <h3 className="font-bold text-xl">{activeSensor?.name} - {
@@ -532,7 +550,7 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
           </div>
           
           <div 
-            className="flex-1 min-h-[200px] cursor-crosshair"
+            className="flex-1 min-h-[200px] cursor-crosshair rounded-2xl border border-[var(--line)] bg-[var(--bg)]/55 p-2"
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -544,10 +562,10 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
               {renderChart()}
             </ResponsiveContainer>
           </div>
-          <div className="text-[10px] col-header text-center mt-2 opacity-50 flex justify-center items-center gap-2">
-            <span>* 使用滑鼠滾輪進行縮放，點擊拖曳平移 (Scroll to zoom, drag to pan) *</span>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-center text-[10px] col-header opacity-60">
+            <span className="rounded-full border border-[var(--line)] bg-[var(--bg)]/60 px-3 py-1">滑鼠滾輪縮放 / 拖曳平移</span>
             <span className="hidden md:inline">|</span>
-            <span className="hidden md:inline">雙擊圖表切換全螢幕 (Double click to toggle fullscreen)</span>
+            <span className="hidden md:inline rounded-full border border-[var(--line)] bg-[var(--bg)]/60 px-3 py-1">雙擊圖表切換全螢幕</span>
           </div>
         </div>
       </div>

@@ -19,31 +19,47 @@ export default function Dashboard({ onSelectOven }: DashboardProps) {
     return () => clearInterval(timer);
   }, [lastTick]);
 
-  const zones = ['All', ...Array.from(new Set(ovens.map(o => o.zone).filter(Boolean)))];
-  const filteredOvens = selectedZone === 'All' ? ovens : ovens.filter(o => o.zone === selectedZone);
+  const zones = ['All', ...Array.from(new Set(ovens.map((o) => o.zone).filter(Boolean)))];
+  const filteredOvens = selectedZone === 'All' ? ovens : ovens.filter((o) => o.zone === selectedZone);
+  const summary = {
+    total: filteredOvens.length,
+    normal: filteredOvens.filter((oven) => oven.status === 'normal').length,
+    warning: filteredOvens.filter((oven) => oven.status === 'warning').length,
+    critical: filteredOvens.filter((oven) => oven.status === 'critical').length,
+  };
+
+  const summaryCards = [
+    { label: '總烤箱數', value: summary.total, tone: 'bg-slate-500' },
+    { label: '正常', value: summary.normal, tone: 'bg-emerald-500' },
+    { label: '警告', value: summary.warning, tone: 'bg-amber-500' },
+    { label: '危險', value: summary.critical, tone: 'bg-rose-500' },
+  ];
 
   return (
-    <div className="p-8">
-      <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between">
+    <div className="page-enter p-4 md:p-8">
+      <header className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">烤箱狀態總覽</h2>
           <p className="col-header mt-2">OVEN STATUS OVERVIEW</p>
+          <p className="mt-3 max-w-2xl text-sm text-[var(--muted)]">
+            即時掌握各區烤箱平均溫度、OEE 模擬值與異常感測器狀態，快速切換區域以聚焦現場風險。
+          </p>
         </div>
-        <div className="flex flex-col items-end gap-3 mt-4 md:mt-0">
-          <div className="flex items-center space-x-2 text-[var(--muted)] text-sm border border-[var(--line)] px-3 py-1.5 rounded-full bg-[var(--panel-bg)] shadow-sm">
+        <div className="flex flex-col gap-3 xl:items-end">
+          <div className="inline-flex items-center space-x-2 rounded-full border border-[var(--line)] bg-[var(--panel-bg)] px-3 py-2 text-sm text-[var(--muted)] shadow-sm">
             <Clock size={14} className="animate-spin-slow text-[var(--accent)]" />
-            <span className="font-mono font-bold text-[var(--ink)]">{countdown}</span> 
+            <span className="font-mono font-bold text-[var(--ink)]">{countdown}</span>
             <span>秒後同步最新資料</span>
           </div>
 
-          <div className="flex bg-[var(--panel-bg)] border border-[var(--line)] rounded-md p-1 self-end">
-            {zones.map(zone => (
+          <div className="flex flex-wrap gap-2 rounded-2xl border border-[var(--line)] bg-[var(--panel-bg)] p-2 shadow-sm xl:justify-end">
+            {zones.map((zone) => (
               <button
                 key={zone}
                 onClick={() => setSelectedZone(zone)}
-                className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
-                  selectedZone === zone 
-                    ? 'bg-[var(--accent)] text-[var(--accent-text)]' 
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                  selectedZone === zone
+                    ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-sm'
                     : 'text-[var(--ink)] hover:bg-[var(--line)]'
                 }`}
               >
@@ -54,65 +70,94 @@ export default function Dashboard({ onSelectOven }: DashboardProps) {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {filteredOvens.map(oven => {
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {summaryCards.map((item) => (
+          <div key={item.label} className="panel-card px-5 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="col-header">{item.label}</p>
+                <div className="data-value mt-2 text-3xl font-bold">{item.value}</div>
+              </div>
+              <span className={`h-3 w-3 rounded-full ${item.tone} shadow-[0_0_12px_rgba(0,0,0,0.2)]`} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {filteredOvens.map((oven) => {
           const avgTemp = oven.sensors.reduce((acc, curr) => acc + curr.temperature, 0) / oven.sensors.length;
           const displayAvg = convertTemp(avgTemp, unit);
-          
-          let statusClass = 'border-[var(--line)] hover:bg-[var(--accent)] hover:text-[var(--accent-text)]';
-          if (oven.status === 'critical') statusClass = 'animate-flash text-[var(--critical)]';
-          else if (oven.status === 'warning') statusClass = 'bg-[var(--warning)] text-[var(--bg)] border-[var(--warning)] hover:opacity-80';
+
+          let statusClass = 'border-[var(--line)] hover:border-[var(--accent)]';
+          let statusBadgeClass = 'bg-emerald-500/15 text-emerald-600';
+          let statusLabel = '正常';
+
+          if (oven.status === 'critical') {
+            statusClass = 'animate-flash border-[var(--critical)] text-[var(--critical)]';
+            statusBadgeClass = 'bg-rose-500/15 text-rose-600';
+            statusLabel = '危險';
+          } else if (oven.status === 'warning') {
+            statusClass = 'border-[var(--warning)] bg-[var(--warning)]/10';
+            statusBadgeClass = 'bg-amber-500/15 text-amber-700';
+            statusLabel = '警告';
+          }
 
           return (
-            <div 
+            <div
               key={oven.id}
               onClick={() => onSelectOven(oven.id)}
-              className={`data-grid p-4 cursor-pointer transition-colors flex flex-col justify-between h-auto min-h-32 relative overflow-hidden group ${statusClass}`}
+              className={`panel-card group relative flex h-auto min-h-40 cursor-pointer flex-col justify-between overflow-hidden p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${statusClass}`}
             >
-              <div className="flex justify-between items-start mb-2">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--accent)] via-transparent to-transparent opacity-70" />
+
+              <div className="mb-4 flex items-start justify-between gap-3">
                 <span className="font-bold">{oven.name}</span>
                 <div className="flex items-center gap-1">
-                  {oven.zone && <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[var(--line)] rounded text-[var(--ink)] opacity-70">{oven.zone}</span>}
+                  {oven.zone && <span className="rounded-full bg-[var(--line)] px-2 py-1 text-[10px] font-bold text-[var(--ink)]">{oven.zone}</span>}
                   <Thermometer size={16} className="opacity-50" />
                 </div>
               </div>
-              
-              <div className="mb-2">
+
+              <div className="mb-4">
                 <div className="col-header mb-1" style={{ color: 'inherit' }}>AVG TEMP</div>
-                <div className="data-value text-2xl font-bold">
+                <div className="data-value text-3xl font-bold">
                   {displayAvg.toFixed(1)}°{unit}
                 </div>
               </div>
 
-              {/* Detail Critical Sensors if any */}
               {oven.status === 'critical' && (
-                <div className="mt-2 pt-2 border-t border-current/20">
-                  <div className="text-[0.65rem] font-bold uppercase mb-1 flex items-center">
+                <div className="mt-2 rounded-2xl border border-current/10 bg-current/5 p-3">
+                  <div className="mb-2 flex items-center text-[0.65rem] font-bold uppercase">
                     <AlertTriangle size={10} className="mr-1" />
                     Critical Sensors
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {oven.sensors.map(sensor => {
-                       const warningThreshold = sensor.thresholds?.warning ?? 100;
-                       const criticalThreshold = sensor.thresholds?.critical ?? 110;
-                       if (sensor.temperature >= criticalThreshold) {
-                         return (
-                           <span key={sensor.id} className="text-[0.65rem] font-bold bg-[var(--critical)] text-white px-1 py-[2px] rounded border border-white/30 animate-pulse">
-                             {sensor.name}: {convertTemp(sensor.temperature, unit).toFixed(1)}°{unit}
-                           </span>
-                         );
-                       }
-                       return null;
+                    {oven.sensors.map((sensor) => {
+                      const criticalThreshold = sensor.thresholds?.critical ?? 110;
+                      if (sensor.temperature >= criticalThreshold) {
+                        return (
+                          <span key={sensor.id} className="animate-pulse rounded border border-white/30 bg-[var(--critical)] px-1 py-[2px] text-[0.65rem] font-bold text-white">
+                            {sensor.name}: {convertTemp(sensor.temperature, unit).toFixed(1)}°{unit}
+                          </span>
+                        );
+                      }
+                      return null;
                     })}
                   </div>
                 </div>
               )}
 
-              {oven.oee && (
-                 <div className="absolute opacity-40 group-hover:opacity-10 right-2 bottom-2 font-mono text-[0.6rem] font-bold mix-blend-difference pointer-events-none uppercase">
-                   OEE: {oven.oee.toFixed(1)}%
-                 </div>
-              )}
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-4">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${statusBadgeClass}`}>
+                  {statusLabel}
+                </span>
+                {oven.oee && (
+                  <span className="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--bg)]/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide">
+                    OEE {oven.oee.toFixed(1)}%
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
