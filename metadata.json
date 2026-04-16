@@ -1,0 +1,6 @@
+{
+  "name": "工廠烤箱溫度監控系統",
+  "description": "即時監控18台烤箱溫度，包含歷史曲線圖、異常警報與設定功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
