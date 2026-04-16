@@ -6,7 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? path.basename(process.cwd());
+  const base = env.VITE_BASE_PATH || (process.env.GITHUB_ACTIONS === 'true' ? `/${repositoryName}/` : '/');
+
   return {
+    base,
     plugins: [
       react(), 
       tailwindcss(),
@@ -19,6 +23,8 @@ export default defineConfig(({mode}) => {
           name: 'Factory Oven Monitor',
           short_name: 'OvenMon',
           description: 'Factory Oven Temperature Monitoring & OEE Dashboard',
+          start_url: base,
+          scope: base,
           theme_color: '#1a1a1a',
           background_color: '#000000',
           display: 'standalone',
