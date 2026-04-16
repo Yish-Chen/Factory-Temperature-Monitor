@@ -21,12 +21,14 @@ export default function Dashboard({ onSelectOven }: DashboardProps) {
 
   const zones = ['All', ...Array.from(new Set(ovens.map((o) => o.zone).filter(Boolean)))];
   const filteredOvens = selectedZone === 'All' ? ovens : ovens.filter((o) => o.zone === selectedZone);
-  const summary = {
-    total: filteredOvens.length,
-    normal: filteredOvens.filter((oven) => oven.status === 'normal').length,
-    warning: filteredOvens.filter((oven) => oven.status === 'warning').length,
-    critical: filteredOvens.filter((oven) => oven.status === 'critical').length,
-  };
+  const summary = filteredOvens.reduce(
+    (acc, oven) => {
+      acc.total += 1;
+      acc[oven.status] += 1;
+      return acc;
+    },
+    { total: 0, normal: 0, warning: 0, critical: 0 },
+  );
 
   const summaryCards = [
     { label: '總烤箱數', value: summary.total, tone: 'bg-slate-500' },

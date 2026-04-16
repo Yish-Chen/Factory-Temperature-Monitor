@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './lib/store';
 import { Activity, Bell, Settings as SettingsIcon, X, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { cn } from './lib/utils';
 import Dashboard from './components/Dashboard';
 import OvenDetail from './components/OvenDetail';
 import Alarms from './components/Alarms';
@@ -102,11 +103,13 @@ function AppContent() {
   };
 
   const sidebarButtonClass = (page: Page) =>
-    `w-full flex items-center ${isSidebarExpanded ? 'space-x-3 px-4' : 'justify-center'} py-3 rounded-xl transition-all duration-200 ${
+    cn(
+      'w-full flex items-center py-3 rounded-xl transition-all duration-200',
+      isSidebarExpanded ? 'space-x-3 px-4' : 'justify-center',
       currentPage === page
         ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_10px_30px_rgba(0,0,0,0.12)]'
-        : 'hover:bg-[var(--line)]/70 hover:translate-x-1'
-    }`;
+        : 'hover:bg-[var(--line)]/70 hover:translate-x-1',
+    );
 
   return (
     <div className="h-screen flex overflow-hidden">
