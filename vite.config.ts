@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'Factory-Temperature-Monitor';
+  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? path.basename(process.cwd());
   const base = env.VITE_BASE_PATH || (process.env.GITHUB_ACTIONS === 'true' ? `/${repositoryName}/` : '/');
 
   return {
