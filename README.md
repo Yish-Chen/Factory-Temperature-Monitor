@@ -1,30 +1,85 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="1200" height="475" alt="Factory Temperature Monitor Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Factory Temperature Monitor
 
-This contains everything you need to run your app locally.
+工廠烤箱溫度監控儀表板，提供即時溫度總覽、感測器歷史趨勢、異常警報紀錄、門檻設定、主題切換與 OEE 模擬資訊，適合用於展示製造現場監控介面。
 
-View your app in AI Studio: https://ai.studio/apps/5b98cac5-bec7-4f7e-88d7-571afcf47c4b
+## 專案特色
 
-## Run Locally
+- 即時模擬 18 台烤箱與多支感測器的溫度變化
+- 依警告 / 危險門檻自動產生異常警報
+- 提供烤箱詳情頁，支援年 / 月 / 日 / 時間維度切換
+- 可個別覆寫感測器門檻值
+- 支援多種主題樣式與攝氏 / 華氏切換
+- 內建 GitHub Pages 部署設定與 PWA 支援
 
-**Prerequisites:**  Node.js
+## 技術棧
 
+- React 19
+- TypeScript
+- Vite 6
+- Tailwind CSS 4
+- Recharts
+- Lucide React
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 本機開發
 
-## Deploy to GitHub Pages
+### 需求
 
-This repository now includes a GitHub Actions workflow that builds and deploys the app to GitHub Pages whenever code is pushed to the `main` branch.
+- Node.js 20+（建議使用最新版 LTS）
 
-The deployment workflow will automatically enable GitHub Pages for the repository on the first successful run.
+### 啟動步驟
 
-After that, every push to `main` will publish the site at:
+1. 安裝依賴
+   ```bash
+   npm install
+   ```
+2. 啟動開發伺服器
+   ```bash
+   npm run dev
+   ```
+3. 開啟瀏覽器查看本機畫面
+
+## 驗證指令
+
+```bash
+npm run lint
+npm run build
+```
+
+> 目前專案尚未導入單元測試框架，因此型別檢查與正式建置是主要驗證流程。
+
+## 環境變數
+
+如需調整部署 base path，可建立 `.env.local`：
+
+```bash
+VITE_BASE_PATH=/Factory-Temperature-Monitor/
+```
+
+一般本機開發可不設定。
+
+## 目錄結構
+
+```text
+src/
+├─ components/   # 各頁面與主要 UI 模組
+├─ lib/          # 全域狀態、工具與假資料
+├─ App.tsx       # 頁面骨架與導覽
+├─ index.css     # 主題 token 與共用樣式
+└─ main.tsx      # 入口點
+```
+
+## 部署
+
+專案已包含 GitHub Actions 與 GitHub Pages 設定，推送到主要分支後即可自動建置並部署至：
 
 `https://yish-chen.github.io/Factory-Temperature-Monitor/`
+
+## 開發注意事項
+
+- 目前所有資料皆為前端模擬資料，請勿提交真實工廠資訊或機敏憑證
+- 若新增環境變數，請同步更新 `.env.example`
+- 若調整 UI 或互動，請確認桌機與行動版版面都可正常使用

@@ -1,6 +1,8 @@
 node_modules/
 build/
 dist/
+# Vite PWA dev server may generate this local-only output directory during preview/debugging.
+dev-dist/
 coverage/
 .DS_Store
 *.log
