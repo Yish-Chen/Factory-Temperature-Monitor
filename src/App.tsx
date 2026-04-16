@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './lib/store';
-import { Activity, Bell, Settings as SettingsIcon, X, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import {
+  Activity,
+  Bell,
+  Settings as SettingsIcon,
+  X,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from 'lucide-react';
 import { cn } from './lib/utils';
 import Dashboard from './components/Dashboard';
 import OvenDetail from './components/OvenDetail';

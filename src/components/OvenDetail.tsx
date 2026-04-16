@@ -11,12 +11,6 @@ interface OvenDetailProps {
 type ChartType = 'line' | 'area' | 'bar';
 type ViewMode = 'year' | 'month' | 'day' | 'hour';
 
-const getSensorLevel = (temperature: number, warningThreshold: number, criticalThreshold: number) => {
-  if (temperature >= criticalThreshold) return 'critical';
-  if (temperature >= warningThreshold) return 'warning';
-  return 'normal';
-};
-
 export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
   const { ovens, rules, unit, updateSensorThreshold } = useAppContext();
   const oven = ovens.find(o => o.id === ovenId);
@@ -39,6 +33,11 @@ export default function OvenDetail({ ovenId, onBack }: OvenDetailProps) {
   const [selectedHour, setSelectedHour] = useState(currentDate.getHours().toString().padStart(2, '0'));
 
   const [simulatedHistory, setSimulatedHistory] = useState<any[]>([]);
+  const getSensorLevel = (temperature: number, warningThreshold: number, criticalThreshold: number) => {
+    if (temperature >= criticalThreshold) return 'critical';
+    if (temperature >= warningThreshold) return 'warning';
+    return 'normal';
+  };
 
   // Zoom / Pan State
   const [zoomDomain, setZoomDomain] = useState<[number, number]>([0, 59]);
